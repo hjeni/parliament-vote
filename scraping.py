@@ -18,13 +18,13 @@ class _DataScrapper(ABC):
     """
 
     def __init__(self, file_paths_generator_factory, verbose=False, n_files=None, log_every=1000):
-        # file generating
-        self._file_paths_generator_factory = file_paths_generator_factory
-        self._file_paths_generator = self._file_paths_generator_factory()
         # declarations
         self._soup = None
         self._html_file_path = None
         self._end = False
+        # file generating
+        self._file_paths_generator_factory = file_paths_generator_factory
+        self._file_paths_generator = self._file_paths_generator_factory()
         # verbose option parameters
         self._verbose = verbose
         self._n_files = n_files
