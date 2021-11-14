@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 
 import pandas as pd
 
+from utils import *
+
 """
 -------------------------------------------- Scrapper -------------------------------------------- 
 """
@@ -15,14 +17,18 @@ class _DataScrapper(ABC):
     Generates Pandas dataframes with data from HTML pages
     """
 
-    def __init__(self, files_generator_factory):
+    def __init__(self, file_paths_generator_factory, verbose=False, n_files=None, log_every=1000):
         # file generating
-        self._files_generator_factory = files_generator_factory
-        self._files_generator = self._files_generator_factory()
+        self._file_paths_generator_factory = file_paths_generator_factory
+        self._file_paths_generator = self._file_paths_generator_factory()
         # declarations
         self._soup = None
         self._html_file_path = None
         self._end = False
+        # verbose option parameters
+        self._verbose = verbose
+        self._n_files = n_files
+        self._log_every = log_every
 
     def generate_all(self):
         """
@@ -32,8 +38,12 @@ class _DataScrapper(ABC):
         """
         self.reset()
         try:
+            counter = 0
             while True:
                 yield self.extract_current()
+                if self._verbose:
+                    print_progress(counter, start=0, end=self._n_files, log_every=self._log_every)
+                    counter += 1
         except StopIteration:
             self._end = True
 
@@ -49,7 +59,7 @@ class _DataScrapper(ABC):
         Resets the file generator
         """
         self._end = False
-        self._files_generator = self._files_generator_factory()
+        self._file_paths_generator = self._file_paths_generator_factory()
 
     def end(self) -> bool:
         """
@@ -61,7 +71,7 @@ class _DataScrapper(ABC):
         """
         Returns bs4 beautiful soup of current page
         """
-        self._html_file_path = next(self._files_generator)
+        self._html_file_path = next(self._file_paths_generator)
         content_tmp = codecs.open(self._html_file_path, 'r')
         return BeautifulSoup(content_tmp.read(), 'html.parser')
 
@@ -71,8 +81,8 @@ class ParlDataScrapper(_DataScrapper):
     Extracts voting results from HTML pages
     """
 
-    def __init__(self, files_generator_factory, column_names_parties, column_names_individual):
-        super().__init__(files_generator_factory)
+    def __init__(self, file_paths_generator_factory, column_names_parties, column_names_individual, verbose=False, n_files=None, log_every=1000):
+        super().__init__(file_paths_generator_factory, verbose, n_files, log_every)
         # data extractors
         self._pde = PartiesDataExtractor(column_names_parties)
         self._ide = IndividualsDataExtractor(column_names_individual)
