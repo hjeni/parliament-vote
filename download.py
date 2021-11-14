@@ -27,11 +27,11 @@ class HtmlPagesDownloader:
         for url in urls_generator:
             if self._verbose:
                 print_progress(counter, start=0, end=n_pages, log_every=self._log_every)
-            counter += 1
             # try to download the page
             try:
                 # create path for the new file, use 'counter' as a seed
                 file_path = f'{self._dir_path}{self._file_names_factory(counter)}'
+                counter += 1
                 if os.path.exists(file_path) and not self._redownload:
                     continue
                 r = requests.get(url, allow_redirects=True)
