@@ -8,25 +8,31 @@ class HtmlPagesDownloader:
     """
     Can be used to download HTML pages to local directory
     """
-    def __init__(self, dir_path, redownload=False, delay=1.0, file_names_factory=None, verbose=False, log_every=1000):
+    def __init__(self, urls_generator_factory, dir_path, redownload=False, delay=1.0, file_names_factory=None, verbose=False, n_pages=None, log_every=1000):
+        # url generating
+        self._urls_generator_factory = urls_generator_factory
+        self._urls_generator = self._urls_generator_factory()
+        # declarations
         self._dir_path = dir_path if dir_path[-1] in '/\\' else f'{dir_path}/'
         self._redownload = redownload
         self._delay = delay
-        self._verbose = verbose
-        self._log_every = log_every
         # simply use a seed and append .html if no naming rule is defined
         self._file_names_factory = lambda x: f'{x}.html' if file_names_factory is None else file_names_factory
+        # verbose option parameters
+        self._verbose = verbose
+        self._n_pages = n_pages
+        self._log_every = log_every
 
-    def download(self, urls_generator, n_pages=None):
+    def download(self):
         """
         Downloads all URLs to its working directory
         """
         mkdir_safe(self._dir_path)
 
         failed, counter = [], 0
-        for url in urls_generator:
+        for url in self._urls_generator:
             if self._verbose:
-                print_progress(counter, start=0, end=n_pages, log_every=self._log_every)
+                print_progress(counter, start=0, end=self._n_pages, log_every=self._log_every)
             # try to download the page
             try:
                 # create path for the new file, use 'counter' as a seed
