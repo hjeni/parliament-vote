@@ -17,7 +17,7 @@ class _DataScrapper(ABC):
     Generates Pandas dataframes with data from HTML pages
     """
 
-    def __init__(self, html_paths_gen_factory, download=False, redownload=False, download_dir_path=None, csv_sep=',', csv_file_names_creator=None, verbose=False, n_files=None, log_every=1000):
+    def __init__(self, html_paths_gen_factory, download=False, redownload=False, download_dir_path=None, csv_sep=',', verbose=False, n_files=None, log_every=1000):
         # declarations
         self._soup = None
         self._html_file_path = None
@@ -26,7 +26,6 @@ class _DataScrapper(ABC):
         # file generating
         self._html_paths_gen_factory = html_paths_gen_factory
         self._html_paths_gen = self._html_paths_gen_factory()
-        self._csv_file_names_creator = lambda x: f'{x}.csv' if csv_file_names_creator is None else csv_file_names_creator
         # download parameters
         assert not download or download_dir_path is not None, 'Download directory has to be provided!'
         self._download = download
@@ -68,13 +67,18 @@ class _DataScrapper(ABC):
         """
         Returns a dataframe from current page
         """
-        # download wrapper for the extraction function
-        data = self._do_extract()
-        if self._download:
-            mkdir_safe(self._download_dir_path)
-            path = self._download_dir_path + self._csv_file_names_creator(self._page_counter)
-            if not os.path.exists(path) or self._redownload:
-                data.to_csv(path, sep=self._csv_sep)
+        mkdir_safe(self._download_dir_path)
+        path = self._download_dir_path + f'{self._page_counter}.csv'
+
+        if not os.path.exists(path) or self._redownload:
+            # scrape data
+            data = self._do_extract()
+            if self._download:
+                if not os.path.exists(path) or self._redownload:
+                    data.to_csv(path, sep=self._csv_sep)
+        else:
+            # just read data from local directory
+            data = pd.read_csv(path, sep=self._csv_sep)
         return data
 
     @abstractmethod
@@ -120,9 +124,9 @@ class _ParlDataScrapper(_DataScrapper):
     Extracts voting results from HTML pages
     """
 
-    def __init__(self, data_extractor_class, html_paths_gen_factory, column_names_parties, download, redownload, download_dir_path, csv_sep, csv_file_names_creator, verbose, n_files, log_every):
-        super().__init__(html_paths_gen_factory, download, redownload, download_dir_path, csv_sep, csv_file_names_creator, verbose, n_files, log_every)
-        self._data_extractor = data_extractor_class(column_names_parties)
+    def __init__(self, data_extractor_class, html_paths_gen_factory, column_names, download, redownload, download_dir_path, csv_sep, verbose, n_files, log_every):
+        super().__init__(html_paths_gen_factory, download, redownload, download_dir_path, csv_sep, verbose, n_files, log_every)
+        self._data_extractor = data_extractor_class(column_names)
 
     def _do_extract(self):
         """
@@ -144,16 +148,16 @@ class PartiesDataScrapper(_ParlDataScrapper):
     """
     Extracts voting results aggregated by political parties
     """
-    def __init__(self, html_paths_gen_factory, column_names_parties, download=False, redownload=False, download_dir_path=None, csv_sep=',', csv_file_names_creator=None, verbose=False, n_files=None, log_every=1000):
-        super().__init__(_PartiesDataExtractor, html_paths_gen_factory, column_names_parties, download, redownload, download_dir_path, csv_sep, csv_file_names_creator, verbose, n_files, log_every)
+    def __init__(self, html_paths_gen_factory, column_names, download=False, redownload=False, download_dir_path=None, csv_sep=',', verbose=False, n_files=None, log_every=1000):
+        super().__init__(_PartiesDataExtractor, html_paths_gen_factory, column_names, download, redownload, download_dir_path, csv_sep, verbose, n_files, log_every)
 
 
 class PoliticiansDataScrapper(_ParlDataScrapper):
     """
     Extracts voting results aggregated by political parties
     """
-    def __init__(self, html_paths_gen_factory, column_names_parties, download=False, redownload=False, download_dir_path=None, csv_sep=',', csv_file_names_creator=None, verbose=False, n_files=None, log_every=1000):
-        super().__init__(_PoliticiansDataExtractor, html_paths_gen_factory, column_names_parties, download, redownload, download_dir_path, csv_sep, csv_file_names_creator, verbose, n_files, log_every)
+    def __init__(self, html_paths_gen_factory, column_names, download=False, redownload=False, download_dir_path=None, csv_sep=',', verbose=False, n_files=None, log_every=1000):
+        super().__init__(_PoliticiansDataExtractor, html_paths_gen_factory, column_names, download, redownload, download_dir_path, csv_sep, verbose, n_files, log_every)
 
 """
 -------------------------------------------- Page data extractors -------------------------------------------- 

@@ -33,6 +33,7 @@ def print_progress(current, start, end=None, log_every=250):
     ratio = '?' if end is None else round(complete / total * 100, 2)
     print(f'[PROGRESS] {complete}/{total} ~ {ratio} % complete. ID: {current}')
 
+
 def print_download_result(n_pages, failed, dir_path=None):
     """
     Prints result info about a process

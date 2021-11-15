@@ -10,7 +10,7 @@ COLUMN_NAMES_INDIVIDUALS = ['TODO']
 DATA_DIR_PATH = './csv_data/'
 PAGES_DIR_PATH = './pages/'
 
-N_FILES = 600
+N_FILES = 100
 
 
 def generate_htmls():
@@ -27,7 +27,7 @@ pds = PartiesDataScrapper(generate_htmls,
                           download_dir_path=DATA_DIR_PATH,
                           verbose=True,
                           n_files=N_FILES,
-                          log_every=100)
+                          log_every=10)
 
 for _ in pds.generate_all():
     pass

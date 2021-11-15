@@ -8,17 +8,15 @@ class HtmlPagesDownloader:
     """
     Can be used to download HTML pages to local directory
     """
-    def __init__(self, urls_generator_factory, working_dir_path, redownload=False, delay=1.0, file_names_creator=None, verbose=False, n_pages=None, log_every=1000):
+    def __init__(self, urls_generator_factory, working_dir_path, redownload=False, delay=1.0, verbose=False, n_pages=None, log_every=1000):
         # declarations
         self._dir_path = None
+        self.change_dir(working_dir_path)
         self._redownload = redownload
         self._delay = delay
         # url generating
         self._urls_generator_factory = urls_generator_factory
         self._urls_generator = self._urls_generator_factory()
-        self.change_dir(working_dir_path)
-        # file naming: simply use a seed and append .html if no naming rule is defined
-        self._file_names_creator = lambda x: f'{x}.html' if file_names_creator is None else file_names_creator
         # verbose option parameters
         self._verbose = verbose
         self._n_pages = n_pages
@@ -38,7 +36,7 @@ class HtmlPagesDownloader:
             # try to download the page
             try:
                 # create path for the new file, use 'counter' as a seed
-                file_path = f'{self._dir_path}{self._file_names_creator(counter)}'
+                file_path = self._dir_path + f'{counter}.html'
                 counter += 1
                 if os.path.exists(file_path) and not self._redownload:
                     continue
