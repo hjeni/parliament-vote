@@ -79,6 +79,7 @@ class _DataScrapper(ABC):
         else:
             # just read data from local directory
             data = pd.read_csv(path, sep=self._csv_sep)
+            self._move()
         return data
 
     @abstractmethod
@@ -117,6 +118,9 @@ class _DataScrapper(ABC):
         self._html_file_path = next(self._html_paths_gen)
         content_tmp = codecs.open(self._html_file_path, 'r')
         return BeautifulSoup(content_tmp.read(), 'html.parser')
+
+    def _move(self):
+        return next(self._html_paths_gen)
 
 
 class _ParlDataScrapper(_DataScrapper):

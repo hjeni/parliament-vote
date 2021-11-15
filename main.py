@@ -13,7 +13,7 @@ PAGES_DIR_PATH = './pages/'
 N_FILES = 100
 
 
-def generate_htmls():
+def generate_html_files():
     for i in range(N_FILES):
         yield f'{PAGES_DIR_PATH}{i}.html'
 
@@ -21,13 +21,20 @@ def generate_htmls():
 # ------------------------------------------------------
 
 
-pds = PartiesDataScrapper(generate_htmls,
-                          COLUMN_NAMES_PARTIES,
-                          download=True,
-                          download_dir_path=DATA_DIR_PATH,
-                          verbose=True,
-                          n_files=N_FILES,
-                          log_every=10)
-
-for _ in pds.generate_all():
+parties_scrapper = PartiesDataScrapper(generate_html_files,
+                                       COLUMN_NAMES_PARTIES,
+                                       download=True,
+                                       download_dir_path=DATA_DIR_PATH + 'parties/',
+                                       verbose=True,
+                                       log_every=10,
+                                       n_files=N_FILES)
+for _ in parties_scrapper.generate_all():
     pass
+
+
+
+
+
+
+
+
