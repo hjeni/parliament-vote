@@ -45,14 +45,23 @@ class _DataScrapper(ABC):
         Yields one tuple per HTML page
         """
         self.reset()
+        failed = []
         try:
             while True:
-                yield self.extract_current()
-                if self._verbose:
-                    print_progress(self._page_counter, start=0, end=self._n_files, log_every=self._log_every)
+                try:
+                    yield self.extract_current()
+                    if self._verbose:
+                        print_progress(self._page_counter, start=0, end=self._n_files, log_every=self._log_every)
+                    self._page_counter += 1
+                except _DataScrappingError:
+                    failed.append(self._page_counter)
                     self._page_counter += 1
         except StopIteration:
             self._end = True
+
+        if self._verbose:
+            print('---------------------------------')
+            print_download_result(self._page_counter, failed, self._download_dir_path)
 
     def extract_current(self):
         """
@@ -110,7 +119,6 @@ class _ParlDataScrapper(_DataScrapper):
 
     def __init__(self, data_extractor_class, html_paths_gen_factory, column_names_parties, download, download_dir_path, csv_sep, csv_file_names_creator, verbose, n_files, log_every):
         super().__init__(html_paths_gen_factory, download, download_dir_path, csv_sep, csv_file_names_creator, verbose, n_files, log_every)
-        # data extractors
         self._data_extractor = data_extractor_class(column_names_parties)
 
     def _do_extract(self):
@@ -197,7 +205,7 @@ class _PartiesDataExtractor(_PageDataExtractor):
         super().__init__(df_column_names, n_columns, keep_copy)
         self._soup = None
         # hardcoded translation for now
-        self._translate_dict = PARTY_NAMES_TRANSLATE_DICT = {
+        self._translate_dict = {
             'ANO': 'ANO',
             'ODS': 'ODS',
             'Piráti': 'Pirati',
@@ -216,7 +224,7 @@ class _PartiesDataExtractor(_PageDataExtractor):
         """
         self._soup = soup
         if self._soup is None:
-            raise DataScrappingError
+            raise _DataScrappingError
 
         self._data = pd.DataFrame(columns=self._column_names)
         curr_row = []
@@ -224,7 +232,7 @@ class _PartiesDataExtractor(_PageDataExtractor):
         for i, value in enumerate(self._generate_table_values()):
             # all values which do not identify a club should be integers
             if i % len(self._column_names) != 0 and not _is_int(value):
-                raise DataScrappingError
+                raise _DataScrappingError
             # add value to the row
             curr_row.append(value)
             # for the last element in the row, append the row and reset
@@ -246,7 +254,7 @@ class _PartiesDataExtractor(_PageDataExtractor):
         table = self._soup.find_all('table')
         # check whether it was found on the page
         if table is None or len(table) <= 1:
-            raise DataScrappingError
+            raise _DataScrappingError
         # the first page should be the one
         for f in table[1].find_all('td'):
             yield f.string
@@ -272,7 +280,7 @@ class _PoliticiansDataExtractor(_PageDataExtractor):
 """
 
 
-class DataScrappingError(Exception):
+class _DataScrappingError(Exception):
     """
     Signalizes an error during scrapping process
     """
