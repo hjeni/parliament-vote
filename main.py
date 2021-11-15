@@ -1,30 +1,31 @@
 from scraping import *
 from download import *
 
-
-# ----------------------------------------------------------------------
-
-def gen_html_test():
-    for i in range(10):
-        yield f'https://www.psp.cz/sqw/hlasy.sqw?g={67260 + i}&l=cz'
+# ------------------------------------------------------
 
 
-URL_PREFIX = 'https://www.psp.cz/sqw/hlasy.sqw?g='
-URL_SUFIX = '&l=cz'
-ID_FIRST = 67018
+COLUMN_NAMES_PARTIES = ['Club', 'Total', 'Yes', 'No', 'Not-logged-in', 'Excused', 'Refrained']
+COLUMN_NAMES_INDIVIDUALS = ['TODO']
+
+DATA_DIR_PATH = './csv_data/'
+PAGES_DIR_PATH = './pages/'
 
 
-def generate_urls(first, last):
-    """
-    Generates all URLs with parliament voting results
-    """
-    for page_id in range(first, last):
-        yield f'{URL_PREFIX}{page_id}{URL_SUFIX}'
-
-# ----------------------------------------------------------------------
+def generate_htmls():
+    for i in range(20):
+        yield f'{PAGES_DIR_PATH}{i}.html'
 
 
-test_dir = '_pages_test/'
+# ------------------------------------------------------
 
-hpd = HtmlPagesDownloader(test_dir, verbose=True, log_every=1)
-hpd.download(generate_urls(ID_FIRST, ID_FIRST + 10), n_pages=10)
+
+pds = PartiesDataScrapper(generate_htmls,
+                          COLUMN_NAMES_PARTIES,
+                          download=True,
+                          download_dir_path=DATA_DIR_PATH,
+                          verbose=True,
+                          n_files=10,
+                          log_every=1)
+
+for _ in pds.generate_all():
+    pass
