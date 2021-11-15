@@ -17,7 +17,7 @@ class _DataScrapper(ABC):
     Generates Pandas dataframes with data from HTML pages
     """
 
-    def __init__(self, html_paths_gen_factory, download=False, download_dir_path=None, csv_sep=',', csv_file_names_creator=None, verbose=False, n_files=None, log_every=1000):
+    def __init__(self, html_paths_gen_factory, download=False, redownload=False, download_dir_path=None, csv_sep=',', csv_file_names_creator=None, verbose=False, n_files=None, log_every=1000):
         # declarations
         self._soup = None
         self._html_file_path = None
@@ -30,6 +30,7 @@ class _DataScrapper(ABC):
         # download parameters
         assert not download or download_dir_path is not None, 'Download directory has to be provided!'
         self._download = download
+        self._redownload = redownload
         self._download_dir_path = None
         self.change_dir(download_dir_path)
         self._csv_sep = csv_sep
@@ -72,7 +73,9 @@ class _DataScrapper(ABC):
         if self._download:
             mkdir_safe(self._download_dir_path)
             path = self._download_dir_path + self._csv_file_names_creator(self._page_counter)
-            data.to_csv(path, sep=self._csv_sep)
+            if not os.path.exists(path) or self._redownload:
+                data.to_csv(path, sep=self._csv_sep)
+        return data
 
     @abstractmethod
     def _do_extract(self):
