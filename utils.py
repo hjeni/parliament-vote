@@ -33,6 +33,16 @@ def print_progress(current, start, end=None, log_every=250):
     ratio = '?' if end is None else round(complete / total * 100, 2)
     print(f'[PROGRESS] {complete}/{total} ~ {ratio} % complete. ID: {current}')
 
+def print_download_result(n_pages, failed, dir_path=None):
+    """
+    Prints result info about a process
+    """
+    print(f'Download complete.')
+    print(f'\tpages processed: {n_pages - len(failed)}')
+    print(f'\tpages failed: \t {len(failed)} --> {failed}')
+    if dir_path is not None:
+        print(f'\nTotal size of the directory at "{dir_path}": {get_dir_size(dir_path) / 1000000:.2f} MB')
+
 
 
 

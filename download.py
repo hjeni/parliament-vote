@@ -58,7 +58,7 @@ class HtmlPagesDownloader:
 
         if self._verbose:
             print('---------------------------------')
-            self._print_download_result(counter, failed, self._dir_path)
+            print_download_result(counter, failed, self._dir_path)
 
     def change_dir(self, dir_path):
         """
@@ -67,17 +67,6 @@ class HtmlPagesDownloader:
         if dir_path is None:
             return
         self._dir_path = dir_path if dir_path[-1] in '/\\' else f'{dir_path}/'
-
-    @staticmethod
-    def _print_download_result(n_pages, failed, dir_path=None):
-        """
-        Prints result info about a process
-        """
-        print(f'Download complete.')
-        print(f'\tpages processed: {n_pages - len(failed)}')
-        print(f'\tpages failed: \t {len(failed)} --> {failed}')
-        if dir_path is not None:
-            print(f'\nTotal size of the directory at "{dir_path}": {get_dir_size(dir_path) / 1000000:.2f} MB')
 
 
 
